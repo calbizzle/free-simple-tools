@@ -1,0 +1,85 @@
+<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Australian business days calculator by state (2026–2027) – Free Simple Tools</title>
+<meta name="description" content="Count business days between two dates, or add business days to a date, skipping weekends and public holidays for any Australian state or territory. Runs in your browser.">
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+@media(max-width:560px){.row{grid-template-columns:1fr}}
+.result{margin-top:.8rem;padding:.8rem;border-radius:8px;border:1px solid var(--border);background:var(--bg)}
+.note{color:var(--muted);font-size:.85rem}
+.big{font-size:1.6rem;font-weight:700}
+</style></head><body>
+<header><a class="brand" href="../">Free Simple Tools</a></header>
+<main><h1>Australian business days calculator</h1>
+<p>Count working days between two dates, or find the date a set number of business days away. Weekends and the public holidays for your state or territory are skipped. Everything runs in your browser.</p>
+<div class="card">
+<div class="row">
+<p><label for="state">State / territory</label>
+<select id="state">
+<option value="ACT">Australian Capital Territory</option>
+<option value="NSW">New South Wales</option>
+<option value="NT">Northern Territory</option>
+<option value="QLD">Queensland</option>
+<option value="SA">South Australia</option>
+<option value="TAS">Tasmania</option>
+<option value="VIC" selected>Victoria</option>
+<option value="WA">Western Australia</option>
+</select></p>
+<p><label><input type="checkbox" id="local"> Also skip regional/local holidays (e.g. Brisbane Ekka, Hobart Regatta)</label></p>
+</div>
+</div>
+
+<div class="card">
+<h2 style="margin-top:0">Business days between two dates</h2>
+<div class="row">
+<p><label for="from">Start date</label><input id="from" type="date"></p>
+<p><label for="to">End date</label><input id="to" type="date"></p>
+</div>
+<p><label><input type="checkbox" id="incStart"> Count the start date too</label></p>
+<div id="countResult" class="result">Choose two dates.</div>
+</div>
+
+<div class="card">
+<h2 style="margin-top:0">Add or subtract business days</h2>
+<div class="row">
+<p><label for="addFrom">Start date</label><input id="addFrom" type="date"></p>
+<p><label for="addN">Business days (use a minus sign to go back)</label><input id="addN" type="number" step="1" value="10"></p>
+</div>
+<div id="addResult" class="result">Choose a start date.</div>
+</div>
+
+<h2>How it works</h2>
+<p>Saturdays, Sundays and full-day public holidays for the selected state or territory are not counted. Part-day holidays (such as Christmas Eve evenings in some states) are treated as normal business days. The end date is always included; the start date is included only if you tick the box. Holiday data covers 2026 and 2027 and comes from the same official sources as our <a href="../au-public-holidays/">Australian public holidays</a> tool.</p>
+<p class="note">This is a guide, not legal advice. Contracts, courts and government agencies can define "business day" differently, and local holidays vary. Check the rules that apply to you.</p>
+<h2>Is my data private?</h2>
+<p>Yes. Calculations run entirely in your browser; nothing is sent anywhere.</p>
+</main>
+<footer><a href="../">All tools</a> · Runs locally in your browser.</footer>
+<script src="../assets/au-holidays.js"></script>
+<script src="bd.js"></script>
+<script>
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const $=id=>document.getElementById(id);
+function fmt(s){const[y,m,d]=s.split('-').map(Number);const dt=new Date(Date.UTC(y,m-1,d));return `${DAYS[dt.getUTCDay()]} ${d} ${MONTHS[m-1]} ${y}`;}
+function opts(){return{includeLocal:$('local').checked,includeStart:$('incStart').checked};}
+function warn(years){return years.length?`<p class="note">No holiday data for ${years.join(', ')}; only weekends were skipped for those dates.</p>`:'';}
+function doCount(){
+  const a=$('from').value,b=$('to').value,box=$('countResult');
+  if(!a||!b){box.textContent='Choose two dates.';return;}
+  const r=countBusinessDays(H,$('state').value,a,b,opts());
+  const hl=r.holidays.length?`<p>Public holidays skipped:</p><ul>${r.holidays.map(h=>`<li>${fmt(h.d)}: ${h.n}</li>`).join('')}</ul>`:'<p>No public holidays fell in this range.</p>';
+  box.innerHTML=`<div class="big">${r.days} business day${Math.abs(r.days)===1?'':'s'}</div><p>${r.weekend} weekend day${r.weekend===1?'':'s'} and ${r.holidays.length} public holiday${r.holidays.length===1?'':'s'} skipped.</p>${hl}${warn(r.missingYears)}`;
+}
+function doAdd(){
+  const a=$('addFrom').value,n=parseInt($('addN').value,10),box=$('addResult');
+  if(!a||isNaN(n)){box.textContent='Choose a start date and a whole number of days.';return;}
+  const r=addBusinessDays(H,$('state').value,a,n,{includeLocal:$('local').checked});
+  box.innerHTML=`<div class="big">${fmt(r.date)}</div><p>${Math.abs(n)} business day${Math.abs(n)===1?'':'s'} ${n<0?'before':'after'} ${fmt(a)}.</p>${r.missingYear?'<p class="note">Part of this range is outside 2026–2027, so holidays there may be missing.</p>':''}`;
+}
+['state','local','incStart','from','to'].forEach(id=>$(id).addEventListener('input',()=>{doCount();doAdd();}));
+['addFrom','addN'].forEach(id=>$(id).addEventListener('input',doAdd));
+$('state').addEventListener('change',()=>{doCount();doAdd();});
+const _n=new Date(),today=new Date(_n.getTime()-_n.getTimezoneOffset()*6e4).toISOString().slice(0,10);$('from').value=today;$('addFrom').value=today;
+doCount();doAdd();
+</script></body></html>

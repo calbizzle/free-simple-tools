@@ -1,0 +1,113 @@
+<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Image Compressor: shrink JPEG &amp; PNG in your browser (Free)</title>
+<meta name="description" content="Compress and resize images in your browser. Adjust quality and max size, compare before and after. Nothing is uploaded.">
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.preview{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-top:.8rem}
+.preview figure{margin:0;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.6rem;text-align:center}
+.preview img{max-width:100%;max-height:220px;object-fit:contain;border-radius:4px}
+.preview figcaption{font-size:.85rem;color:var(--muted);margin-top:.4rem}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+@media(max-width:560px){.preview,.row{grid-template-columns:1fr}}
+button{font:inherit;padding:.55rem 1rem;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+button.secondary{background:var(--card);color:var(--accent)}
+button:disabled{opacity:.5;cursor:not-allowed}
+input[type=range]{width:100%;padding:0}
+</style></head><body>
+<header><a class="brand" href="../">Free Simple Tools</a></header>
+<main><h1>Image compressor</h1>
+<div class="card">
+<label for="file">Choose an image</label>
+<input id="file" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+<div class="row" style="margin-top:.8rem">
+<div><label for="quality">JPEG / WebP quality: <b id="qLabel">0.8</b></label>
+<input id="quality" type="range" min="0.1" max="1" step="0.05" value="0.8"></div>
+<div><label for="maxW">Max width (px, 0 = keep)</label>
+<input id="maxW" type="number" min="0" step="1" value="1600" inputmode="numeric"></div>
+</div>
+<label for="fmt" style="margin-top:.6rem;display:block">Output format</label>
+<select id="fmt">
+<option value="image/jpeg">JPEG</option>
+<option value="image/webp">WebP</option>
+<option value="image/png">PNG (lossless; quality ignored)</option>
+</select>
+<p style="margin-top:.8rem;display:flex;gap:.6rem;flex-wrap:wrap">
+<button id="go" type="button" disabled>Compress</button>
+<button id="dl" type="button" class="secondary" disabled>Download</button>
+</p>
+<p class="stats" style="margin-top:1rem">
+<span class="stat"><small>Original</small><b id="origSize">—</b></span>
+<span class="stat"><small>Compressed</small><b id="newSize">—</b></span>
+<span class="stat"><small>Saved</small><b id="saved">—</b></span>
+<span class="stat"><small>Dimensions</small><b id="dims">—</b></span>
+</p>
+<div class="preview" id="preview" hidden>
+<figure><img id="origImg" alt="Original"><figcaption>Original</figcaption></figure>
+<figure><img id="outImg" alt="Compressed"><figcaption>Compressed</figcaption></figure>
+</div>
+</div>
+<h2>How it works</h2>
+<p>Your image is resized (if you set a max width) and re-encoded with the quality you choose, using your browser’s canvas. Nothing leaves this page. Animated GIFs become a still frame.</p>
+<h2>Is my data private?</h2><p>Yes. Compression runs locally; the file is never uploaded.</p>
+</main><footer><a href="../">All tools</a> · Runs locally in your browser.</footer>
+<script>
+const file=document.getElementById('file'),quality=document.getElementById('quality'),qLabel=document.getElementById('qLabel'),
+maxW=document.getElementById('maxW'),fmt=document.getElementById('fmt'),go=document.getElementById('go'),dl=document.getElementById('dl'),
+origSize=document.getElementById('origSize'),newSize=document.getElementById('newSize'),saved=document.getElementById('saved'),
+dims=document.getElementById('dims'),preview=document.getElementById('preview'),origImg=document.getElementById('origImg'),outImg=document.getElementById('outImg');
+let srcFile=null,outBlob=null,outUrl=null;
+function fmtBytes(n){if(n<1024)return n+' B';if(n<1048576)return(n/1024).toFixed(1)+' KB';return(n/1048576).toFixed(2)+' MB';}
+quality.oninput=()=>{qLabel.textContent=Number(quality.value).toFixed(2);};
+file.onchange=()=>{
+  srcFile=file.files&&file.files[0]||null; outBlob=null; dl.disabled=true; go.disabled=!srcFile;
+  newSize.textContent=saved.textContent=dims.textContent='—'; preview.hidden=true;
+  if(outUrl){URL.revokeObjectURL(outUrl);outUrl=null;}
+  if(!srcFile){origSize.textContent='—';origImg.removeAttribute('src');return;}
+  origSize.textContent=fmtBytes(srcFile.size);
+  const r=new FileReader();
+  r.onload=()=>{origImg.src=r.result;};
+  r.readAsDataURL(srcFile);
+};
+function loadImage(blobOrUrl){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=typeof blobOrUrl==='string'?blobOrUrl:URL.createObjectURL(blobOrUrl);});}
+async function compress(){
+  if(!srcFile)return;
+  go.disabled=true;
+  try{
+    const img=await loadImage(srcFile);
+    const cap=Math.max(0,parseInt(maxW.value,10)||0);
+    let w=img.naturalWidth,h=img.naturalHeight;
+    if(cap>0&&w>cap){h=Math.round(h*(cap/w));w=cap;}
+    const canvas=document.createElement('canvas');
+    canvas.width=w; canvas.height=h;
+    const ctx=canvas.getContext('2d');
+    if(fmt.value==='image/jpeg'){ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);}
+    ctx.drawImage(img,0,0,w,h);
+    const type=fmt.value;
+    const q=type==='image/png'?undefined:Number(quality.value);
+    outBlob=await new Promise(res=>canvas.toBlob(res,type,q));
+    if(!outBlob)throw new Error('Encode failed');
+    if(outUrl)URL.revokeObjectURL(outUrl);
+    outUrl=URL.createObjectURL(outBlob);
+    outImg.src=outUrl;
+    newSize.textContent=fmtBytes(outBlob.size);
+    const pct=srcFile.size?Math.max(0,Math.round((1-outBlob.size/srcFile.size)*100)):0;
+    saved.textContent=pct+'%';
+    dims.textContent=w+'×'+h;
+    preview.hidden=false; dl.disabled=false;
+  }catch(e){newSize.textContent='Error';saved.textContent='—';}
+  go.disabled=!srcFile;
+}
+go.onclick=compress;
+dl.onclick=()=>{
+  if(!outBlob)return;
+  const a=document.createElement('a');
+  const ext=fmt.value==='image/png'?'png':(fmt.value==='image/webp'?'webp':'jpg');
+  const base=(srcFile&&srcFile.name?srcFile.name.replace(/\.[^.]+$/,''):'image')+'-compressed.'+ext;
+  a.href=outUrl; a.download=base; a.click();
+};
+// Expose helpers for sanity checks in non-browser environments via logic mirror below
+window.__imageCompressMath={
+  scale(w,h,cap){if(!(cap>0)||w<=cap)return{w,h};return{w:cap,h:Math.round(h*(cap/w))}},
+  savedPct(orig,next){return orig?Math.max(0,Math.round((1-next/orig)*100)):0;}
+};
+</script></body></html>

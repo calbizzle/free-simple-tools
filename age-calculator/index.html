@@ -1,0 +1,34 @@
+<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Age Calculator: exact age in years, months and days (Free)</title>
+<meta name="description" content="Work out exact age or the time between two dates in years, months, days, total weeks and total days, plus days until the next birthday. Runs in your browser.">
+<link rel="stylesheet" href="../assets/style.css"></head><body>
+<header><a class="brand" href="../">Free Simple Tools</a></header>
+<main><h1>Age calculator</h1>
+<div class="card">
+<p><label for="b">Date of birth (or start date)</label> <input id="b" type="date"></p>
+<p><label for="d">Age on this date</label> <input id="d" type="date"></p>
+<div class="stats">
+<div class="stat"><b id="ymd">–</b>Exact age</div><div class="stat"><b id="tw">–</b>Total weeks</div>
+<div class="stat"><b id="td">–</b>Total days</div><div class="stat"><b id="nb">–</b>Days to next birthday</div>
+</div></div>
+<h2>How it works</h2>
+<p>Age is counted in whole years, then whole months, then the remaining days, the same way you'd count on a calendar. If you were born on 29 February, this tool treats your birthday as 28 February in non-leap years. Total days counts calendar days between the two dates, not including the end date.</p>
+<h2>Is my data private?</h2><p>Yes. Everything is calculated in your browser; dates are never sent anywhere.</p>
+</main><footer><a href="../">All tools</a> · Runs locally in your browser.</footer>
+<script>
+const $=id=>document.getElementById(id),pad=n=>String(n).padStart(2,'0');
+const today=new Date(),iso=x=>`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;
+$('d').value=iso(today);
+const P=s=>{const[a,b,c]=s.split('-').map(Number);return{y:a,m:b-1,d:c};},U=o=>Date.UTC(o.y,o.m,o.d);
+const dim=(y,m)=>new Date(Date.UTC(y,m+1,0)).getUTCDate();
+const bday=(b,y)=>({y,m:b.m,d:Math.min(b.d,dim(y,b.m))});
+function age(b,e){const add=k=>{const y=b.y+Math.floor((b.m+k)/12),m=(b.m+k)%12;return{y,m,d:Math.min(b.d,dim(y,m))};};let k=(e.y-b.y)*12+e.m-b.m;if(U(add(k))>U(e))k--;const a=add(k);return[Math.floor(k/12),k%12,Math.round((U(e)-U(a))/864e5)];}
+function u(){if(!$('b').value||!$('d').value)return;const b=P($('b').value),e=P($('d').value);
+if(U(e)<U(b)){$('ymd').textContent='End is before start';return;}
+const[y,m,d]=age(b,e),days=Math.round((U(e)-U(b))/864e5);
+$('ymd').textContent=`${y} y ${m} m ${d} d`;$('td').textContent=days.toLocaleString('en-AU');
+$('tw').textContent=Math.floor(days/7).toLocaleString('en-AU')+(days%7?` + ${days%7} d`:'');
+let n=bday(b,e.y);if(U(n)<U(e))n=bday(b,e.y+1);const k=Math.round((U(n)-U(e))/864e5);
+$('nb').textContent=k===0?'Today!':k;}
+$('b').oninput=u;$('d').oninput=u;
+</script></body></html>

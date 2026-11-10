@@ -1,0 +1,43 @@
+<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QR Code Generator: free, no sign-up, download PNG or SVG</title>
+<meta name="description" content="Make a QR code for a link, text, Wi-Fi network or phone number. Free, no sign-up, no tracking redirects. Runs in your browser; download as PNG or SVG.">
+<link rel="stylesheet" href="../assets/style.css"></head><body>
+<header><a class="brand" href="../">Free Simple Tools</a></header>
+<main><h1>QR code generator</h1>
+<div class="card">
+<label for="type">Type</label>
+<select id="type">
+<option value="text">Link or text</option>
+<option value="wifi">Wi-Fi network</option>
+<option value="tel">Phone number</option>
+</select>
+<div id="f-text" style="margin-top:.6rem">
+<label for="txt">Link or text</label>
+<textarea id="txt" rows="3" style="width:100%">https://example.com</textarea>
+</div>
+<div id="f-wifi" hidden style="margin-top:.6rem">
+<label for="ssid">Network name (SSID)</label><input id="ssid" type="text">
+<label for="pw" style="margin-top:.6rem;display:block">Password</label><input id="pw" type="text" autocomplete="off">
+<label for="sec" style="margin-top:.6rem;display:block">Security</label>
+<select id="sec"><option value="WPA">WPA/WPA2/WPA3</option><option value="WEP">WEP</option><option value="nopass">None (open)</option></select>
+<label style="margin-top:.6rem;display:block"><input id="hid" type="checkbox"> Hidden network</label>
+</div>
+<div id="f-tel" hidden style="margin-top:.6rem">
+<label for="tel">Phone number</label><input id="tel" type="tel" placeholder="+61 4xx xxx xxx">
+</div>
+<label for="ecl" style="margin-top:.6rem;display:block">Error correction</label>
+<select id="ecl"><option value="L">Low (7%)</option><option value="M" selected>Medium (15%)</option><option value="Q">Quartile (25%)</option><option value="H">High (30%)</option></select>
+<label for="size" style="margin-top:.6rem;display:block">PNG size (pixels)</label>
+<select id="size"><option>256</option><option selected>512</option><option>1024</option></select>
+<div style="margin-top:1rem;text-align:center"><canvas id="cv" width="256" height="256" style="max-width:100%;image-rendering:pixelated;background:#fff"></canvas>
+<p id="msg" class="stats"></p></div>
+<p><button id="png" type="button">Download PNG</button> <button id="svg" type="button">Download SVG</button></p>
+</div>
+<h2>Do these QR codes expire?</h2>
+<p>No. The code holds your link or text directly, with no redirect service in between, so it keeps working as long as the link itself works.</p>
+<h2>Is my data private?</h2><p>Yes. The code is made in your browser; nothing (including Wi-Fi passwords) is sent to a server.</p>
+<p><small>QR encoder: qrcode-generator by Kazuhiko Arase (MIT licence). "QR Code" is a registered trademark of DENSO WAVE INCORPORATED.</small></p>
+</main><footer><a href="../">All tools</a> · Runs locally in your browser.</footer>
+<script src="../assets/qrcode.js"></script>
+<script src="qr.js"></script>
+</body></html>

@@ -1,0 +1,29 @@
+<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Word Counter & Character Counter (Free, Private)</title>
+<meta name="description" content="Count words, characters (with and without spaces), sentences, paragraphs and reading time instantly. Runs in your browser, nothing is uploaded.">
+<link rel="stylesheet" href="../assets/style.css"></head><body>
+<header><a class="brand" href="../">Free Simple Tools</a></header>
+<main><h1>Word &amp; character counter</h1>
+<div class="card"><label for="t">Paste or type your text</label>
+<textarea id="t" placeholder="Start typing..."></textarea>
+<div class="stats">
+<div class="stat"><b id="w">0</b>Words</div><div class="stat"><b id="c">0</b>Characters</div>
+<div class="stat"><b id="cn">0</b>Characters (no spaces)</div><div class="stat"><b id="s">0</b>Sentences</div>
+<div class="stat"><b id="p">0</b>Paragraphs</div><div class="stat"><b id="r">0 min</b>Reading time</div>
+</div>
+<p><label for="lim">Character limit to check against (optional)</label>
+<input id="lim" type="number" min="1" placeholder="e.g. 280, 500, 2000"> <span id="limmsg"></span></p></div>
+<h2>How it works</h2>
+<p>Words are counted as runs of letters or numbers separated by spaces or punctuation. Reading time assumes about 230 words per minute. Many forms, job applications and grant portals cap answers by characters including spaces, so check against the "Characters" figure unless the form says otherwise.</p>
+<h2>Is my text private?</h2><p>Yes. The counting happens in your browser with JavaScript; your text is never sent to a server.</p>
+</main><footer><a href="../">All tools</a> · Runs locally in your browser.</footer>
+<script>
+const $=id=>document.getElementById(id),t=$('t');
+function u(){const v=t.value,words=(v.match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu)||[]).length;
+$('w').textContent=words;$('c').textContent=[...v].length;$('cn').textContent=[...v.replace(/\s/g,'')].length;
+$('s').textContent=(v.match(/[^.!?\n]+[.!?]+|[^.!?\n]+$/gm)||[]).filter(x=>x.trim()).length;
+$('p').textContent=v.split(/\n\s*\n/).filter(x=>x.trim()).length;
+$('r').textContent=Math.max(words?1:0,Math.round(words/230))+' min';
+const L=+$('lim').value,n=[...v].length;$('limmsg').textContent=L?(n<=L?`${L-n} characters left`:`${n-L} over the limit`):'';}
+t.addEventListener('input',u);$('lim').addEventListener('input',u);u();
+</script></body></html>

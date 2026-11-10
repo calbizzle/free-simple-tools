@@ -1,0 +1,56 @@
+<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unit Converter: length, weight, temperature, volume (Free)</title>
+<meta name="description" content="Convert length, weight, temperature and volume between metric and imperial units. Runs in your browser, nothing is uploaded.">
+<link rel="stylesheet" href="../assets/style.css"></head><body>
+<header><a class="brand" href="../">Free Simple Tools</a></header>
+<main><h1>Unit converter</h1>
+<div class="card">
+<label for="cat">Category</label>
+<select id="cat">
+<option value="length">Length</option>
+<option value="weight">Weight / mass</option>
+<option value="temp">Temperature</option>
+<option value="volume">Volume</option>
+</select>
+<label for="fromU" style="margin-top:.6rem;display:block">From</label>
+<select id="fromU"></select>
+<label for="val" style="margin-top:.6rem;display:block">Value</label>
+<input id="val" type="number" step="any" value="1" inputmode="decimal">
+<label for="toU" style="margin-top:.6rem;display:block">To</label>
+<select id="toU"></select>
+<p class="stats" style="margin-top:1rem"><span class="stat"><small>Result</small><b id="out">—</b></span></p>
+</div>
+<h2>What it covers</h2>
+<p>Length (mm, cm, m, km, in, ft, yd, mi), weight (mg, g, kg, t, oz, lb, st), temperature (°C, °F, K) and volume (mL, L, tsp, tbsp, cup (metric 250 mL), fl oz (US), pint (US), gallon (US)). Useful for recipes, DIY and travel.</p>
+<h2>Is my data private?</h2><p>Yes. Conversion happens in your browser; nothing is sent to a server.</p>
+</main><footer><a href="../">All tools</a> · Runs locally in your browser.</footer>
+<script>
+const U={
+length:{mm:1,cm:10,m:1000,km:1e6,in:25.4,ft:304.8,yd:914.4,mi:1609344},
+weight:{mg:1,g:1000,kg:1e6,t:1e9,oz:28349.523125,lb:453592.37,st:6350293.18},
+volume:{mL:1,L:1000,tsp:4.92892159375,tbsp:14.78676478125,cup:250,'fl oz':29.5735295625,pint:473.176473,gallon:3785.411784}
+};
+const labels={
+length:{mm:'Millimetres (mm)',cm:'Centimetres (cm)',m:'Metres (m)',km:'Kilometres (km)',in:'Inches (in)',ft:'Feet (ft)',yd:'Yards (yd)',mi:'Miles (mi)'},
+weight:{mg:'Milligrams (mg)',g:'Grams (g)',kg:'Kilograms (kg)',t:'Tonnes (t)',oz:'Ounces (oz)',lb:'Pounds (lb)',st:'Stone (st)'},
+volume:{mL:'Millilitres (mL)',L:'Litres (L)',tsp:'Teaspoons US (tsp)',tbsp:'Tablespoons US (tbsp)',cup:'Cups metric (250 mL)', 'fl oz':'Fluid ounces US (fl oz)',pint:'Pints US (pt)',gallon:'Gallons US (gal)'},
+temp:{C:'Celsius (°C)',F:'Fahrenheit (°F)',K:'Kelvin (K)'}
+};
+const cat=document.getElementById('cat'),fromU=document.getElementById('fromU'),toU=document.getElementById('toU'),val=document.getElementById('val'),out=document.getElementById('out');
+function fill(){
+  const c=cat.value,keys=Object.keys(labels[c]);
+  fromU.innerHTML=toU.innerHTML=keys.map(k=>`<option value="${k}">${labels[c][k]}</option>`).join('');
+  fromU.selectedIndex=0; toU.selectedIndex=Math.min(1,keys.length-1); convert();
+}
+function toC(v,u){if(u==='C')return v;if(u==='F')return(v-32)*5/9;return v-273.15;}
+function fromC(v,u){if(u==='C')return v;if(u==='F')return v*9/5+32;return v+273.15;}
+function convert(){
+  const n=parseFloat(val.value); if(!Number.isFinite(n)){out.textContent='—';return;}
+  const c=cat.value,a=fromU.value,b=toU.value; let r;
+  if(c==='temp') r=fromC(toC(n,a),b);
+  else {const f=U[c]; r=n*f[a]/f[b];}
+  const abs=Math.abs(r);
+  out.textContent=(abs!==0&&(abs<1e-4||abs>=1e6)?r.toExponential(6):Number(r.toPrecision(10))).toString();
+}
+cat.onchange=fill; fromU.onchange=toU.onchange=val.oninput=convert; fill();
+</script></body></html>

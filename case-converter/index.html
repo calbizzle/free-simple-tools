@@ -1,0 +1,28 @@
+<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Case Converter: UPPER, lower, Title, Sentence case (Free)</title>
+<meta name="description" content="Convert text to UPPERCASE, lowercase, Title Case, Sentence case, camelCase, snake_case or kebab-case instantly. Runs in your browser, nothing is uploaded.">
+<link rel="stylesheet" href="../assets/style.css"></head><body>
+<header><a class="brand" href="../">Free Simple Tools</a></header>
+<main><h1>Case converter</h1>
+<div class="card"><label for="t">Paste your text</label>
+<textarea id="t" placeholder="Type or paste text, then pick a case..."></textarea>
+<p class="btns">
+<button data-c="upper">UPPERCASE</button> <button data-c="lower">lowercase</button>
+<button data-c="title">Title Case</button> <button data-c="sentence">Sentence case</button>
+<button data-c="camel">camelCase</button> <button data-c="snake">snake_case</button>
+<button data-c="kebab">kebab-case</button> <button id="copy">Copy</button> <span id="msg"></span></p></div>
+<h2>How it works</h2>
+<p>Title Case capitalises each word but keeps short joining words (a, an, the, and, of, in, on, to and similar) lowercase unless they start the text. Sentence case lowercases everything, then capitalises the first letter of each sentence. camelCase, snake_case and kebab-case strip punctuation and join words, which is handy for file names and code.</p>
+<h2>Is my text private?</h2><p>Yes. Conversion happens in your browser; nothing is sent to a server.</p>
+</main><footer><a href="../">All tools</a> · Runs locally in your browser.</footer>
+<script>
+const t=document.getElementById('t'),small=new Set('a an the and but or nor for so yet of in on at to by up as via per vs'.split(' '));
+const words=s=>s.match(/[\p{L}\p{N}]+/gu)||[];
+const f={upper:s=>s.toUpperCase(),lower:s=>s.toLowerCase(),
+title:s=>{let i=0;return s.toLowerCase().replace(/[\p{L}\p{N}][\p{L}\p{N}'’]*/gu,w=>(i++&&small.has(w))?w:w[0].toUpperCase()+w.slice(1));},
+sentence:s=>s.toLowerCase().replace(/(^\s*|[.!?]\s+)(\p{L})/gu,(m,a,b)=>a+b.toUpperCase()),
+camel:s=>words(s).map((w,i)=>i?w[0].toUpperCase()+w.slice(1).toLowerCase():w.toLowerCase()).join(''),
+snake:s=>words(s).map(w=>w.toLowerCase()).join('_'),kebab:s=>words(s).map(w=>w.toLowerCase()).join('-')};
+document.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{t.value=f[b.dataset.c](t.value);});
+document.getElementById('copy').onclick=async()=>{try{await navigator.clipboard.writeText(t.value);document.getElementById('msg').textContent='Copied';}catch(e){t.select();}};
+</script></body></html>

@@ -1,0 +1,102 @@
+<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Australian public holidays by state (2026–2027) – Free Simple Tools</title>
+<meta name="description" content="Look up Australian public holidays by state or territory for 2026 and 2027, or check whether a specific date is a public holiday. Runs in your browser.">
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+th,td{text-align:left;padding:.45rem .4rem;border-bottom:1px solid var(--border);vertical-align:top}
+th{color:var(--muted);font-weight:600}
+.note{color:var(--muted);font-size:.85rem}
+.badge{display:inline-block;background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:.1rem .5rem;font-size:.75rem;margin-left:.3rem}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+@media(max-width:560px){.row{grid-template-columns:1fr}}
+#checkResult{margin-top:.8rem;padding:.8rem;border-radius:8px;border:1px solid var(--border);background:var(--bg)}
+#checkResult.yes{border-color:#86efac;background:#f0fdf4}
+#checkResult.no{border-color:#e3e7ee}
+</style></head><body>
+<header><a class="brand" href="../">Free Simple Tools</a></header>
+<main><h1>Australian public holidays</h1>
+<p>Pick a year and a state or territory to see public holidays, or check a specific date. Dates are from official government sources (cited below). Everything runs in your browser.</p>
+<div class="card">
+<div class="row">
+<p><label for="year">Year</label>
+<select id="year"><option value="2026">2026</option><option value="2027">2027</option></select></p>
+<p><label for="state">State / territory</label>
+<select id="state">
+<option value="ACT">Australian Capital Territory</option>
+<option value="NSW">New South Wales</option>
+<option value="NT">Northern Territory</option>
+<option value="QLD">Queensland</option>
+<option value="SA">South Australia</option>
+<option value="TAS">Tasmania</option>
+<option value="VIC" selected>Victoria</option>
+<option value="WA">Western Australia</option>
+</select></p>
+</div>
+<div id="pending" class="note" hidden></div>
+<table><thead><tr><th>Date</th><th>Holiday</th></tr></thead><tbody id="list"></tbody></table>
+</div>
+
+<div class="card">
+<h2 style="margin-top:0">Check a date</h2>
+<p><label for="check">Is this date a public holiday in the selected state?</label>
+<input id="check" type="date"></p>
+<div id="checkResult">Choose a date to check.</div>
+</div>
+
+<h2>Sources</h2>
+<ul>
+<li><a href="https://www.fairwork.gov.au/employment-conditions/public-holidays/2026-public-holidays" rel="noopener">Fair Work Ombudsman – 2026 public holidays</a></li>
+<li><a href="https://www.fairwork.gov.au/employment-conditions/public-holidays/2027-public-holidays" rel="noopener">Fair Work Ombudsman – 2027 public holidays</a></li>
+<li><a href="https://business.vic.gov.au/business-information/public-holidays/victorian-public-holidays-2026" rel="noopener">Business Victoria – Victorian public holidays 2026</a> (VIC cross-check)</li>
+<li><a href="https://business.vic.gov.au/business-information/public-holidays/victorian-public-holidays-2027" rel="noopener">Business Victoria – Victorian public holidays 2027</a> (VIC cross-check)</li>
+</ul>
+<p class="note">Public holiday rules can change, and some areas have local or regional holidays not listed here. Treat this as a guide and confirm with the official sources above or your state authority. Part-day holidays (for example Christmas Eve evenings in some states) are marked.</p>
+<h2>Is my data private?</h2>
+<p>Yes. Lookups run entirely in your browser; nothing is sent anywhere.</p>
+</main>
+<footer><a href="../">All tools</a> · Runs locally in your browser.</footer>
+<script src="../assets/au-holidays.js"></script>
+<script>
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const $=id=>document.getElementById(id);
+function fmt(iso){
+  const[y,m,d]=iso.split('-').map(Number);
+  const dt=new Date(Date.UTC(y,m-1,d));
+  return `${DAYS[dt.getUTCDay()]} ${d} ${MONTHS[m-1]} ${y}`;
+}
+function holidays(){
+  const y=+$('year').value,s=$('state').value;
+  return (H[y]&&H[y][s])||[];
+}
+function render(){
+  const y=$('year').value,s=$('state').value,rows=holidays();
+  const pend=PENDING[s+'|'+y];
+  const p=$('pending');
+  if(pend){p.hidden=false;p.textContent=pend;}else{p.hidden=true;p.textContent='';}
+  $('list').innerHTML=rows.map(h=>{
+    const badge=h.note?` <span class="badge">${h.note}</span>`:'';
+    return `<tr><td>${fmt(h.d)}</td><td>${h.n}${badge}</td></tr>`;
+  }).join('')||'<tr><td colspan="2">No holidays loaded for this selection.</td></tr>';
+  check();
+}
+function check(){
+  const v=$('check').value,box=$('checkResult');
+  if(!v){box.className='';box.textContent='Choose a date to check.';return;}
+  const y=+v.slice(0,4);
+  if(!H[y]){box.className='no';box.textContent=`No holiday data loaded for ${y}. This tool covers 2026 and 2027.`;return;}
+  const s=$('state').value;
+  const hits=(H[y][s]||[]).filter(h=>h.d===v);
+  const label=$('state').selectedOptions[0].textContent;
+  if(hits.length){
+    box.className='yes';
+    box.innerHTML=`<strong>Yes</strong> — ${fmt(v)} is a public holiday in ${label}: <em>${hits.map(h=>h.n+(h.note?' ('+h.note+')':'')).join('; ')}</em>.`;
+  }else{
+    box.className='no';
+    box.innerHTML=`<strong>No</strong> — ${fmt(v)} is not on the ${label} statewide/capital-city list for ${y}. Local or regional holidays may still apply.`;
+  }
+}
+$('year').onchange=render;$('state').onchange=render;$('check').oninput=check;
+render();
+</script></body></html>
